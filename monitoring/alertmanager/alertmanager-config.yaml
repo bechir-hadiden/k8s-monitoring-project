@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: email-config
+  namespace: monitoring
+  labels:
+    alertmanagerConfig: email
+spec:
+  route:
+    receiver: email-alerts
+    groupWait: 10s
+    groupInterval: 1m
+    repeatInterval: 1m
+  receivers:
+    - name: email-alerts
+      emailConfigs:
+        - to: bechirhadidan8@gmail.com
+          from: bechirhadidan8@gmail.com
+          smarthost: smtp.gmail.com:587
+          authUsername: bechirhadidan8@gmail.com
+          authPassword:
+            name: gmail-secret
+            key: password
+          requireTLS: true

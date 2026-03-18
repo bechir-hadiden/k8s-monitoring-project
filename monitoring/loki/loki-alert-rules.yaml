@@ -1,0 +1,45 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: loki-alert-rules
+  namespace: monitoring
+  labels:
+    release: prometheus-stack
+spec:
+  groups:
+    - name: loki-log-alerts
+      rules:
+
+        # Alerte si un pod génère des erreurs dans ses logs
+        - alert: HighErrorLogs
+          expr: |
+            sum(rate({namespace="default"} |= "error" [5m])) by (pod) > 10
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Trop d'erreurs dans les logs de {{ $labels.pod }}"
+            description: "Plus de 10 erreurs/sec dans les logs du pod {{ $labels.pod }}"
+
+        # Alerte si un pod génère des PANIC/FATAL
+        - alert: CriticalLogDetected
+          expr: |
+            sum(rate({namespace="default"} |~ "panic|fatal|FATAL|PANIC" [5m])) by (pod) > 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PANIC/FATAL détecté dans {{ $labels.pod }}"
+            description: "Un message critique a été détecté dans les logs de {{ $labels.pod }}"
+
+        # Alerte si un service ne génère plus aucun log (silence suspect)
+        - alert: NoLogsFromService
+          expr: |
+            sum(rate({namespace="default", app="frontend"}[10m])) == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Aucun log du frontend depuis 10 minutes"
+            description: "Le service frontend ne génère plus de logs — service peut-être arrêté"
+EOF

@@ -1,0 +1,45 @@
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: custom-alert-rules
+  namespace: monitoring
+  labels:
+    release: prometheus-stack
+    app: kube-prometheus-stack
+spec:
+  groups:
+    - name: pod-alerts
+      rules:
+        - alert: PodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total[15m]) * 60 * 15 > 3
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod en CrashLoop: {{ $labels.pod }}"
+            description: "Le pod {{ $labels.pod }} a redémarré plus de 3 fois en 15 minutes."
+        - alert: PodNotReady
+          expr: kube_pod_status_ready{condition="false"} == 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod pas prêt: {{ $labels.pod }}"
+        - alert: HighCPUUsage
+          expr: |
+            sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (namespace, pod)
+            /
+            sum(kube_pod_container_resource_limits{resource="cpu"}) by (namespace, pod) > 0.80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CPU élevé sur {{ $labels.pod }}"
+        - alert: NodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node non disponible: {{ $labels.node }}"

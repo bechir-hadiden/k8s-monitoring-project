@@ -1,0 +1,4 @@
+secrets/
+*.secret.yaml
+*password*
+*credentials*

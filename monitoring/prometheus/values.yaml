@@ -1,0 +1,60 @@
+grafana:
+  enabled: true
+  adminPassword: "admin123"
+  service:
+    type: NodePort
+    nodePort: 30300
+
+prometheus:
+  enabled: true
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+    retention: 7d
+
+alertmanager:
+  enabled: true
+  service:
+    type: NodePort
+    nodePort: 30093
+  alertmanagerSpec:
+    alertmanagerConfigSelector: {}
+    alertmanagerConfigNamespaceSelector: {}
+  config:
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: "smtp.gmail.com:587"
+      smtp_from: "bechirhadidan8@gmail.com"
+      smtp_auth_username: "bechirhadidan8@gmail.com"
+      smtp_auth_password: "awhnxstdxpsxtpxe"
+      smtp_require_tls: true
+    route:
+      group_by: ["alertname"]
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 1m
+      receiver: email-alerts
+    receivers:
+      - name: email-alerts
+        email_configs:
+          - to: "bechirhadidan8@gmail.com"
+            subject: "Alerte K8s - {{ .GroupLabels.alertname }}"
+            send_resolved: true
+      - name: "null"
+    templates: []
+
+nodeExporter:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true
+
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false
