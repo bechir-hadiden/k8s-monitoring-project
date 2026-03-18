@@ -163,4 +163,4 @@ Pull requests are welcome! For major changes, please open an issue first.
 
 ---
 
-> Made with ❤️ by [Bechir Hadidan](https://github.com/bechirhadidan) — 2026
+> Made with ❤️ by [Bechir Hadidan](https://github.com/bechir-hadiden?tab=repositories) — 2026
